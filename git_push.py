@@ -99,9 +99,9 @@ def main():
 
         porcelain.push(repo_path, target_url, refspecs=refspecs)
         print("=" * 60)
-        print(f"✅ 成功备份并推送到 GitHub 仓库: {repo_url}")
-        print(f"   分支: {args.branch}")
-        print(f"   版本标签: {', '.join(tag_names)}")
+        print(f"[OK] 成功备份并推送到 GitHub 仓库: {repo_url}")
+        print(f"     分支: {args.branch}")
+        print(f"     版本标签: {', '.join(tag_names)}")
         print("=" * 60)
         return 0
     except Exception as e:
@@ -113,4 +113,9 @@ def main():
         return 1
 
 if __name__ == "__main__":
+    if sys.stdout.encoding != "utf-8":
+        try:
+            sys.stdout.reconfigure(encoding="utf-8")
+        except Exception:
+            pass
     sys.exit(main())
