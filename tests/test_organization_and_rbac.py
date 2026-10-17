@@ -145,3 +145,57 @@ async def test_operator_permission_boundary():
         assert resp.status_code == 403
         data = resp.json()
         assert "操作权限不足" in data["detail"]
+
+@pytest.mark.asyncio
+async def test_create_employee_with_user_account():
+    """测试录入新员工时同步创建登录账号密码并完成首次认证闭环"""
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+        admin_token = await get_admin_token(client)
+        headers = {"Authorization": f"Bearer {admin_token}"}
+
+        # 获取质保部门和操作员角色 ID
+        depts_res = await client.get("/api/v1/org/departments", headers=headers)
+        qa_dept_id = depts_res.json()[0]["id"]
+
+        roles_res = await client.get("/api/v1/rbac/roles", headers=headers)
+        op_role = next(r for r in roles_res.json() if r["code"] == "ROLE_DEPT_MANAGER")
+
+        # 录入员工并开设账号
+        emp_payload = {
+            "employee_no": "BR-2026-TEST-99",
+            "name": "李质保 (Li Quality)",
+            "email": "li.quality.test@bravio-erp.com",
+            "phone": "+86 13800000000",
+            "department_id": qa_dept_id,
+            "status": "ACTIVE",
+            "account": {
+                "username": "li_quality",
+                "password": "Password123!",
+                "role_ids": [op_role["id"]],
+                "is_active": True
+            }
+        }
+
+        create_res = await client.post("/api/v1/org/employees", json=emp_payload, headers=headers)
+        assert create_res.status_code == 201
+        data = create_res.json()
+        assert data["employee_no"] == "BR-2026-TEST-99"
+        assert data["account_username"] == "li_quality"
+        assert op_role["name"] in data["account_roles"]
+
+        # 验证新开设的员工账号可成功登录并生成 Token
+        login_res = await client.post(
+            "/api/v1/auth/login",
+            json={"username": "li_quality", "password": "Password123!"}
+        )
+        assert login_res.status_code == 200
+        login_data = login_res.json()
+        assert login_data["success"] is True
+        assert login_data["user"]["username"] == "li_quality"
+        new_token = login_data["token"]["access_token"]
+
+        # 验证新用户携带 Token 可访问 /auth/me
+        me_res = await client.get("/api/v1/auth/me", headers={"Authorization": f"Bearer {new_token}"})
+        assert me_res.status_code == 200
+        assert me_res.json()["username"] == "li_quality"
+

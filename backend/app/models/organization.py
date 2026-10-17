@@ -78,11 +78,13 @@ class Employee(BaseAuditModel):
 
     department = relationship("Department", back_populates="employees")
     job_position = relationship("JobPosition", back_populates="employees")
+    user = relationship("User", lazy="selectin", foreign_keys=[user_id])
     certifications = relationship("EmployeeCertification", back_populates="employee", cascade="all, delete-orphan", lazy="selectin")
     trainings = relationship("EmployeeTraining", back_populates="employee", cascade="all, delete-orphan", lazy="selectin")
 
     def __repr__(self):
         return f"<Employee no={self.employee_no} name={self.name} status={self.status}>"
+
 
 class EmployeeCertification(BaseAuditModel):
     """

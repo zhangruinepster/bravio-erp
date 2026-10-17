@@ -110,6 +110,13 @@ class TrainingResponse(TrainingBase):
     model_config = ConfigDict(from_attributes=True)
 
 # ----------------- 员工花名册模型 -----------------
+class EmployeeAccountCreate(BaseModel):
+    """为员工直接创建关联的系统登录账号与角色 (docs/03 & docs/04)"""
+    username: str
+    password: str
+    role_ids: List[str] = []
+    is_active: bool = True
+
 class EmployeeBase(BaseModel):
     employee_no: str
     name: str
@@ -123,7 +130,7 @@ class EmployeeBase(BaseModel):
     user_id: Optional[str] = None
 
 class EmployeeCreate(EmployeeBase):
-    pass
+    account: Optional[EmployeeAccountCreate] = None
 
 class EmployeeUpdate(BaseModel):
     name: Optional[str] = None
@@ -150,7 +157,10 @@ class EmployeeResponse(EmployeeBase):
     created_at: datetime
     department_name: Optional[str] = None
     job_title: Optional[str] = None
+    account_username: Optional[str] = None
+    account_roles: List[str] = []
     certifications: List[CertificationResponse] = []
     trainings: List[TrainingResponse] = []
     competency_status: Optional[EmployeeCompetencyAudit] = None
     model_config = ConfigDict(from_attributes=True)
+

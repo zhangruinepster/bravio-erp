@@ -644,3 +644,340 @@ body {
   background: #fff;
   margin-top: auto;
 }
+
+/* ================== ODOO UI/UX SPECIFICATION STYLES (docs/02) ================== */
+/* 1. App Switcher */
+.app-switcher-btn {
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  padding: 6px 10px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-main);
+  transition: background var(--transition-fast);
+}
+.app-switcher-btn:hover {
+  background: var(--border-color);
+}
+
+.app-switcher-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.65);
+  backdrop-filter: blur(8px);
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.app-switcher-container {
+  width: 100%;
+  max-width: 680px;
+  background: #ffffff;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xl);
+  padding: 32px;
+  border: 1px solid var(--border-color);
+}
+
+.app-switcher-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.app-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 20px;
+}
+
+.app-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px 12px;
+  border-radius: var(--radius-md);
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  text-decoration: none;
+  color: var(--text-main);
+  background: #f8fafc;
+}
+.app-tile:hover {
+  background: #ffffff;
+  border-color: var(--primary);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+.app-tile.disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  filter: grayscale(1);
+}
+.app-tile-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26px;
+  margin-bottom: 12px;
+}
+.app-tile-title {
+  font-size: 13.5px;
+  font-weight: 600;
+  text-align: center;
+}
+
+/* 2. Control Panel */
+.odoo-control-panel {
+  background: #ffffff;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 14px 18px;
+  margin-bottom: 20px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  box-shadow: var(--shadow-sm);
+}
+
+.cp-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.cp-center {
+  flex: 1;
+  max-width: 500px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cp-search-input {
+  width: 100%;
+  padding: 8px 14px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  font-size: 13.5px;
+  outline: none;
+  transition: border var(--transition-fast);
+}
+.cp-search-input:focus {
+  border-color: var(--primary);
+}
+
+.filter-pills {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.filter-pill {
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--border-color);
+  background: #fff;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  color: var(--text-muted);
+}
+.filter-pill.active {
+  background: var(--primary-light);
+  color: var(--primary);
+  border-color: var(--primary);
+  font-weight: 600;
+}
+
+.cp-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.view-switcher-group {
+  display: flex;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+.view-switch-btn {
+  background: #fff;
+  border: none;
+  padding: 6px 12px;
+  font-size: 12.5px;
+  cursor: pointer;
+  border-right: 1px solid var(--border-color);
+  color: var(--text-muted);
+}
+.view-switch-btn:last-child {
+  border-right: none;
+}
+.view-switch-btn.active {
+  background: var(--primary-light);
+  color: var(--primary);
+  font-weight: 600;
+}
+
+/* 3. Kanban Cards */
+.kanban-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+  gap: 16px;
+}
+
+.kanban-card {
+  background: #ffffff;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+.kanban-card:hover {
+  border-color: var(--primary);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+.kanban-card-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+.kanban-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-full);
+  background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+/* 4. Paper Sheet Modal / Drawer */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(4px);
+  z-index: 1050;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 30px 16px;
+  overflow-y: auto;
+}
+
+.paper-sheet {
+  width: 100%;
+  max-width: 860px;
+  background: #ffffff;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xl);
+  border: 1px solid var(--border-color);
+  overflow: hidden;
+  margin-bottom: 40px;
+}
+
+.paper-sheet-header {
+  background: #f8fafc;
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.status-pipeline {
+  display: flex;
+  align-items: center;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+  font-size: 12px;
+}
+.pipeline-step {
+  padding: 4px 14px;
+  background: #fff;
+  color: var(--text-muted);
+  border-right: 1px solid var(--border-color);
+}
+.pipeline-step:last-child {
+  border-right: none;
+}
+.pipeline-step.active {
+  background: var(--primary);
+  color: #fff;
+  font-weight: 600;
+}
+
+.smart-stat-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: #fff;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-main);
+  box-shadow: var(--shadow-sm);
+}
+
+.notebook-nav {
+  display: flex;
+  border-bottom: 2px solid var(--border-light);
+  padding: 0 24px;
+  margin-top: 16px;
+}
+.notebook-tab {
+  padding: 10px 18px;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--text-muted);
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  margin-bottom: -2px;
+}
+.notebook-tab.active {
+  color: var(--primary);
+  border-bottom-color: var(--primary);
+}
+
+.notebook-content {
+  padding: 24px;
+}
+
+.chatter-box {
+  background: #f8fafc;
+  border-top: 1px solid var(--border-color);
+  padding: 20px 24px;
+}
+

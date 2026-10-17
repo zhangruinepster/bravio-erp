@@ -207,6 +207,10 @@ async def list_employees(
                 )
             )
 
+        # 提取绑定账号信息
+        acc_username = emp.user.username if emp.user else None
+        acc_roles = [r.name for r in getattr(emp.user, "roles", [])] if emp.user else []
+
         resp_list.append(
             EmployeeResponse(
                 id=emp.id,
@@ -222,6 +226,8 @@ async def list_employees(
                 status=emp.status,
                 hire_date=emp.hire_date,
                 user_id=emp.user_id,
+                account_username=acc_username,
+                account_roles=acc_roles,
                 created_at=emp.created_at,
                 certifications=cert_resps,
                 trainings=[TrainingResponse.model_validate(t) for t in emp.trainings],
@@ -230,13 +236,16 @@ async def list_employees(
         )
     return resp_list
 
-@router.post("/employees", response_model=EmployeeResponse, status_code=status.HTTP_201_CREATED, summary="录入新员工")
+@router.post("/employees", response_model=EmployeeResponse, status_code=status.HTTP_201_CREATED, summary="录入新员工(支持同时开通系统账号)")
 async def create_employee(
     emp_in: EmployeeCreate,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(require_permissions("hr.employee.create"))
 ):
-    # 检查工号与邮箱唯一性
+    from app.core.security import get_password_hash
+    from app.models.rbac import Role
+
+    # 1. 检查工号与邮箱唯一性
     exist_no = (await db.execute(select(Employee).where(Employee.employee_no == emp_in.employee_no, Employee.is_deleted == False))).scalar_one_or_none()
     if exist_no:
         raise HTTPException(status_code=400, detail=f"工号 '{emp_in.employee_no}' 已被占用")
@@ -245,6 +254,44 @@ async def create_employee(
     if exist_email:
         raise HTTPException(status_code=400, detail=f"邮箱 '{emp_in.email}' 已被占用")
 
+    created_user_id = emp_in.user_id
+    acc_username = None
+    acc_roles = []
+
+    # 2. 如果提供了 account 信息，同步创建 sys_users 账号
+    if emp_in.account and emp_in.account.username:
+        acc = emp_in.account
+        exist_u = (await db.execute(select(User).where(User.username == acc.username, User.is_deleted == False))).scalar_one_or_none()
+        if exist_u:
+            raise HTTPException(status_code=400, detail=f"系统登录用户名 '{acc.username}' 已被占用")
+
+        # 密码强度简易核验
+        if len(acc.password) < 6:
+            raise HTTPException(status_code=400, detail="登录密码长度至少为 6 位")
+
+        new_user = User(
+            username=acc.username,
+            email=str(emp_in.email),
+            full_name=emp_in.name,
+            hashed_password=get_password_hash(acc.password),
+            role="operator",
+            is_active=acc.is_active,
+            is_superuser=False,
+            created_by_id=current_user.id
+        )
+
+        if acc.role_ids:
+            roles_stmt = select(Role).where(Role.id.in_(acc.role_ids), Role.is_deleted == False)
+            assigned_roles = (await db.execute(roles_stmt)).scalars().all()
+            new_user.roles = list(assigned_roles)
+            acc_roles = [r.name for r in assigned_roles]
+
+        db.add(new_user)
+        await db.flush()
+        created_user_id = new_user.id
+        acc_username = new_user.username
+
+    # 3. 创建员工人事实体
     emp = Employee(
         employee_no=emp_in.employee_no,
         name=emp_in.name,
@@ -255,12 +302,13 @@ async def create_employee(
         manager_id=emp_in.manager_id,
         status=emp_in.status,
         hire_date=emp_in.hire_date,
-        user_id=emp_in.user_id,
+        user_id=created_user_id,
         created_by_id=current_user.id
     )
     db.add(emp)
     await db.commit()
     await db.refresh(emp)
+
     return EmployeeResponse(
         id=emp.id,
         employee_no=emp.employee_no,
@@ -273,10 +321,13 @@ async def create_employee(
         status=emp.status,
         hire_date=emp.hire_date,
         user_id=emp.user_id,
+        account_username=acc_username,
+        account_roles=acc_roles,
         created_at=emp.created_at,
         certifications=[],
         trainings=[]
     )
+
 
 # =========================================================================
 # 4. 资质认证与预警 (Certifications)
