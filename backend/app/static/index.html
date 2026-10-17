@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bravio ERP · 企业级智能协同中枢</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+
+  <!-- ================= 1. 登录门户 (Login View) ================= -->
+  <div id="authView" class="auth-wrapper">
+    <div class="auth-card">
+      <div class="auth-header">
+        <div class="brand-badge">BRAVIO DIGITAL SYSTEM</div>
+        <h1 class="auth-title">Bravio ERP 企业门户</h1>
+        <p class="auth-subtitle">智能制造与高可靠性供应链管理中心</p>
+      </div>
+
+      <div class="auth-body">
+        <div id="authAlert" class="auth-alert"></div>
+
+        <form id="loginForm">
+          <div class="form-group">
+            <label class="form-label" for="username">用户名 / 工作邮箱</label>
+            <input type="text" id="username" class="form-input" placeholder="输入 admin 或工作邮箱" required autocomplete="username">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="password">登录密码</label>
+            <input type="password" id="password" class="form-input" placeholder="输入密码" required autocomplete="current-password">
+          </div>
+
+          <button type="submit" id="loginBtn" class="btn-primary">
+            <span id="loginBtnText">安全登入系统</span>
+          </button>
+        </form>
+
+        <div class="demo-credentials">
+          <div class="demo-title">⚡ 快速开发测试凭据（点击自动填充）</div>
+          <div class="demo-btn-group">
+            <button type="button" class="demo-btn" onclick="fillCredentials('admin', 'admin123')">
+              🔑 系统管理员 (admin)
+            </button>
+            <button type="button" class="demo-btn" onclick="fillCredentials('operator', 'operator123')">
+              👷 质检操作员 (operator)
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= 2. 主工作台仪表盘 (Dashboard View) ================= -->
+  <div id="dashboardView" class="dashboard-wrapper">
+    <!-- 顶部导航栏 -->
+    <header class="top-navbar">
+      <div class="nav-left">
+        <a href="#" class="nav-brand">
+          <div class="brand-icon">B</div>
+          <span>Bravio ERP</span>
+        </a>
+        <div class="system-status-indicator" id="navSystemStatus">
+          <span class="status-dot"></span>
+          <span id="navStatusText">虚拟环境已连接</span>
+        </div>
+      </div>
+
+      <div class="nav-right">
+        <div class="user-profile">
+          <div class="user-avatar" id="userAvatar">A</div>
+          <div class="user-meta">
+            <div class="user-name" id="userName">系统管理员</div>
+            <span class="user-role-badge" id="userRole">ADMIN</span>
+          </div>
+        </div>
+        <button class="btn-secondary" onclick="handleLogout()">安全退出</button>
+      </div>
+    </header>
+
+    <!-- 工作台主体内容 -->
+    <main class="content-area">
+      <!-- 页面顶部标语 -->
+      <div class="page-header">
+        <div>
+          <h2 class="page-title">系统工作台 & 运行中枢</h2>
+          <p class="page-subtitle">当前运行模式：本地开发虚拟环境 (Python 3.12 + FastAPI + SQLite/Postgres)</p>
+        </div>
+        <div>
+          <a href="/api/v1/docs" target="_blank" class="btn-secondary" style="text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
+            📑 交互式 API 文档 (Swagger)
+          </a>
+        </div>
+      </div>
+
+      <!-- 实时状态指标卡片 -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-header">
+            <span class="stat-label">系统运行状态</span>
+            <span class="stat-badge" style="background:#ecfdf5; color:#10b981;">HEALTHY</span>
+          </div>
+          <div class="stat-value" id="statHealthStatus">Operational</div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-header">
+            <span class="stat-label">持久化数据引擎</span>
+            <span class="stat-badge" style="background:#eff6ff; color:#3b82f6;">ASYNC</span>
+          </div>
+          <div class="stat-value" id="statDbStatus">Connected</div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-header">
+            <span class="stat-label">系统持续运行时间</span>
+            <span class="stat-badge" style="background:#f5f3ff; color:#8b5cf6;">UPTIME</span>
+          </div>
+          <div class="stat-value" id="statUptime">0.0 s</div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-header">
+            <span class="stat-label">核心版本与模式</span>
+            <span class="stat-badge" style="background:#fffbeb; color:#f59e0b;">DEV_MODE</span>
+          </div>
+          <div class="stat-value" id="statVersion">v1.0.0-dev</div>
+        </div>
+      </div>
+
+      <!-- 开发者日志系统窗口 (满足需求 2：随时测试开发问题，建立开发者日志系统) -->
+      <div class="dev-console-card">
+        <div class="dev-console-header">
+          <div class="dev-console-title">
+            <div class="terminal-dots">
+              <span class="terminal-dot dot-red"></span>
+              <span class="terminal-dot dot-yellow"></span>
+              <span class="terminal-dot dot-green"></span>
+            </div>
+            <span>🛠️ 开发者实时日志监控与测试控制台 (Developer Log Engine)</span>
+          </div>
+
+          <div class="dev-console-actions">
+            <button class="terminal-btn active" id="filterAll" onclick="filterLogs(null)">全部 (ALL)</button>
+            <button class="terminal-btn" id="filterInfo" onclick="filterLogs('INFO')">INFO</button>
+            <button class="terminal-btn" id="filterWarn" onclick="filterLogs('WARNING')">WARN</button>
+            <button class="terminal-btn" id="filterError" onclick="filterLogs('ERROR')">ERROR</button>
+            <span style="color:#475569; font-size:12px;">|</span>
+            <button class="terminal-btn" onclick="triggerTestLog('INFO', '模拟业务请求正常处理')">+ 触发测试 INFO</button>
+            <button class="terminal-btn" onclick="triggerTestLog('WARNING', '检测到库存低于预警水位')">+ 触发 WARN</button>
+            <button class="terminal-btn" onclick="triggerTestLog('ERROR', '模拟硬件打印网关超时异常')">+ 模拟 ERROR</button>
+            <button class="terminal-btn" onclick="refreshLogs()">🔄 刷新</button>
+            <button class="terminal-btn" onclick="clearLocalLogs()">🧹 清屏</button>
+          </div>
+        </div>
+
+        <div class="dev-logs-container" id="logsContainer">
+          <div class="log-line">
+            <span class="log-time">[系统日志就绪]</span>
+            <span class="log-level level-INFO">INIT</span>
+            <span class="log-msg">正在实时轮询并捕获应用层、数据库层、中间件层日志...</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ERP 业务模块全景 (17 个业务域规划预览) -->
+      <div class="section-title">
+        <span>📦 Bravio ERP 业务功能矩阵 (根据架构规划逐步加载)</span>
+        <span style="font-size: 13px; color: var(--text-muted); font-weight: normal;">已搭建虚拟运行环境，后续按需一键挂载</span>
+      </div>
+
+      <div class="modules-grid">
+        <div class="module-card">
+          <div class="module-top">
+            <div class="module-icon" style="background:#e0e7ff; color:#4338ca;">🔐</div>
+            <div class="module-info">
+              <h4>系统认证与安全 (Auth & RBAC)</h4>
+              <p>JWT多因子鉴权、会话保护、审计日志追踪</p>
+            </div>
+          </div>
+          <div class="module-footer">
+            <span style="color:#10b981;">● 已就绪 (当前运行)</span>
+            <span style="color:#64748b;">核心基础设施</span>
+          </div>
+        </div>
+
+        <div class="module-card">
+          <div class="module-top">
+            <div class="module-icon" style="background:#dbeafe; color:#1d4ed8;">📋</div>
+            <div class="module-info">
+              <h4>工程变更管理 (ECM/ECR/ECO)</h4>
+              <p>变更评估、物料替换流水、双版本并行管控</p>
+            </div>
+          </div>
+          <div class="module-footer">
+            <span style="color:#f59e0b;">○ 等待核心逻辑挂载</span>
+            <span style="color:#64748b;">Doc 13</span>
+          </div>
+        </div>
+
+        <div class="module-card">
+          <div class="module-top">
+            <div class="module-icon" style="background:#fef3c7; color:#b45309;">🛡️</div>
+            <div class="module-info">
+              <h4>质量安全与 8D (QMS & 8D)</h4>
+              <p>IQC/IPQC/FQC质检流、重大事件8D攻关追踪</p>
+            </div>
+          </div>
+          <div class="module-footer">
+            <span style="color:#f59e0b;">○ 等待核心逻辑挂载</span>
+            <span style="color:#64748b;">Doc 14</span>
+          </div>
+        </div>
+
+        <div class="module-card">
+          <div class="module-top">
+            <div class="module-icon" style="background:#fce7f3; color:#be185d;">🔄</div>
+            <div class="module-info">
+              <h4>退货与逆向风控 (RMA)</h4>
+              <p>返修入库、真伪防伪核验、换新成本追溯</p>
+            </div>
+          </div>
+          <div class="module-footer">
+            <span style="color:#f59e0b;">○ 等待核心逻辑挂载</span>
+            <span style="color:#64748b;">Doc 09</span>
+          </div>
+        </div>
+
+        <div class="module-card">
+          <div class="module-top">
+            <div class="module-icon" style="background:#dcfce7; color:#15803d;">🤝</div>
+            <div class="module-info">
+              <h4>供应商与客户管理 (SRM/CRM)</h4>
+              <p>供应商准入评分、客户授信账期、合同档案</p>
+            </div>
+          </div>
+          <div class="module-footer">
+            <span style="color:#f59e0b;">○ 等待核心逻辑挂载</span>
+            <span style="color:#64748b;">Doc 17</span>
+          </div>
+        </div>
+
+        <div class="module-card">
+          <div class="module-top">
+            <div class="module-icon" style="background:#f3e8ff; color:#7e22ce;">🏭</div>
+            <div class="module-info">
+              <h4>生产制造与车间执行 (MES)</h4>
+              <p>工单派工、32位激光单品码全流程过站扫描</p>
+            </div>
+          </div>
+          <div class="module-footer">
+            <span style="color:#f59e0b;">○ 等待核心逻辑挂载</span>
+            <span style="color:#64748b;">Doc 05</span>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <footer class="dashboard-footer">
+      Bravio ERP Enterprise System &copy; 2026 · 模块化单体架构 · 本地开发环境与 Docker 容器兼容
+    </footer>
+  </div>
+
+  <script src="/static/js/app.js"></script>
+</body>
+</html>

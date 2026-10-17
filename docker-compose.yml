@@ -1,0 +1,69 @@
+version: "3.8"
+
+services:
+  # 1. 核心应用 API 服务 (FastAPI + 门户 SPA)
+  bravio-api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: bravio-api
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - ENVIRONMENT=production
+      - DEBUG=False
+      - SECRET_KEY=bravio-production-super-secret-key-replace-me-2026
+      - DATABASE_URL=postgresql+asyncpg://bravio_admin:bravio_secret_2026@bravio-db:5432/bravio_erp
+      - REDIS_URL=redis://bravio-redis:6379/0
+      - LOG_LEVEL=INFO
+      - LOG_DIR=/app/logs
+    volumes:
+      - ./logs:/app/logs
+    depends_on:
+      bravio-db:
+        condition: service_healthy
+      bravio-redis:
+        condition: service_healthy
+    networks:
+      - bravio-net
+
+  # 2. 企业级主数据库 PostgreSQL 16
+  bravio-db:
+    image: postgres:16-alpine
+    container_name: bravio-db
+    restart: unless-stopped
+    environment:
+      - POSTGRES_DB=bravio_erp
+      - POSTGRES_USER=bravio_admin
+      - POSTGRES_PASSWORD=bravio_secret_2026
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U bravio_admin -d bravio_erp"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - bravio-net
+
+  # 3. 内存缓存与分布式锁 Redis 7
+  bravio-redis:
+    image: redis:7-alpine
+    container_name: bravio-redis
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - bravio-net
+
+volumes:
+  pg_data:
+    driver: local
+
+networks:
+  bravio-net:
+    driver: bridge
