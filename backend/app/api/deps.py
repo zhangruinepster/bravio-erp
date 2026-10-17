@@ -59,3 +59,51 @@ async def get_current_superuser(
             detail="操作权限不足：需要系统管理员权限"
         )
     return current_user
+
+def require_permissions(*required_perms: str):
+    """
+    细粒度 RBAC 权限守卫依赖项 (docs/03)
+    支持多权限校验，超级管理员或拥有对应 permission code 的用户方可放行
+    """
+    async def permission_checker(current_user: User = Depends(get_current_user)) -> User:
+        if current_user.is_superuser or current_user.role == "admin":
+            return current_user
+
+        # 聚合用户持有的所有权限代码
+        user_perm_codes = set()
+        for role in getattr(current_user, "roles", []):
+            for perm in getattr(role, "permissions", []):
+                user_perm_codes.add(perm.code)
+
+        missing = [p for p in required_perms if p not in user_perm_codes]
+        if missing:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=f"操作权限不足：缺少必要的功能权限 [{', '.join(missing)}]"
+            )
+        return current_user
+
+    return permission_checker
+
+def require_roles(*required_role_codes: str):
+    """
+    角色守卫依赖项
+    """
+    async def role_checker(current_user: User = Depends(get_current_user)) -> User:
+        if current_user.is_superuser or current_user.role == "admin":
+            return current_user
+
+        user_role_codes = {r.code for r in getattr(current_user, "roles", [])}
+        # 兼容旧 role 字符串
+        if current_user.role:
+            user_role_codes.add(current_user.role)
+
+        if not any(r in user_role_codes for r in required_role_codes):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=f"操作权限不足：需要角色 [{', '.join(required_role_codes)}]"
+            )
+        return current_user
+
+    return role_checker
+

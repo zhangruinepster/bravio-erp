@@ -128,40 +128,131 @@
         </div>
       </div>
 
-      <!-- 开发者日志系统窗口 (满足需求 2：随时测试开发问题，建立开发者日志系统) -->
-      <div class="dev-console-card">
-        <div class="dev-console-header">
-          <div class="dev-console-title">
-            <div class="terminal-dots">
-              <span class="terminal-dot dot-red"></span>
-              <span class="terminal-dot dot-yellow"></span>
-              <span class="terminal-dot dot-green"></span>
+      <!-- 模块导航 Tabs -->
+      <div style="display: flex; gap: 12px; margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 12px;">
+        <button class="terminal-btn active" id="tabBtnSystem" onclick="switchMainTab('system')">
+          📊 系统监控与开发者实时日志
+        </button>
+        <button class="terminal-btn" id="tabBtnOrg" onclick="switchMainTab('org')">
+          👥 人员组织与 ISO/KBA 资质矩阵 (docs/04)
+        </button>
+        <button class="terminal-btn" id="tabBtnRbac" onclick="switchMainTab('rbac')">
+          🔐 立体 RBAC 权限与数据范围 (docs/03)
+        </button>
+      </div>
+
+      <!-- ================= Tab 1: 系统监控与日志 ================= -->
+      <div id="tabContentSystem">
+        <!-- 开发者日志系统窗口 -->
+        <div class="dev-console-card">
+          <div class="dev-console-header">
+            <div class="dev-console-title">
+              <div class="terminal-dots">
+                <span class="terminal-dot dot-red"></span>
+                <span class="terminal-dot dot-yellow"></span>
+                <span class="terminal-dot dot-green"></span>
+              </div>
+              <span>🛠️ 开发者实时日志监控与测试控制台 (Developer Log Engine)</span>
             </div>
-            <span>🛠️ 开发者实时日志监控与测试控制台 (Developer Log Engine)</span>
+
+            <div class="dev-console-actions">
+              <button class="terminal-btn active" id="filterAll" onclick="filterLogs(null)">全部 (ALL)</button>
+              <button class="terminal-btn" id="filterInfo" onclick="filterLogs('INFO')">INFO</button>
+              <button class="terminal-btn" id="filterWarn" onclick="filterLogs('WARNING')">WARN</button>
+              <button class="terminal-btn" id="filterError" onclick="filterLogs('ERROR')">ERROR</button>
+              <span style="color:#475569; font-size:12px;">|</span>
+              <button class="terminal-btn" onclick="triggerTestLog('INFO', '模拟业务请求正常处理')">+ 触发测试 INFO</button>
+              <button class="terminal-btn" onclick="triggerTestLog('WARNING', '检测到库存低于预警水位')">+ 触发 WARN</button>
+              <button class="terminal-btn" onclick="triggerTestLog('ERROR', '模拟硬件打印网关超时异常')">+ 模拟 ERROR</button>
+              <button class="terminal-btn" onclick="refreshLogs()">🔄 刷新</button>
+              <button class="terminal-btn" onclick="clearLocalLogs()">🧹 清屏</button>
+            </div>
           </div>
 
-          <div class="dev-console-actions">
-            <button class="terminal-btn active" id="filterAll" onclick="filterLogs(null)">全部 (ALL)</button>
-            <button class="terminal-btn" id="filterInfo" onclick="filterLogs('INFO')">INFO</button>
-            <button class="terminal-btn" id="filterWarn" onclick="filterLogs('WARNING')">WARN</button>
-            <button class="terminal-btn" id="filterError" onclick="filterLogs('ERROR')">ERROR</button>
-            <span style="color:#475569; font-size:12px;">|</span>
-            <button class="terminal-btn" onclick="triggerTestLog('INFO', '模拟业务请求正常处理')">+ 触发测试 INFO</button>
-            <button class="terminal-btn" onclick="triggerTestLog('WARNING', '检测到库存低于预警水位')">+ 触发 WARN</button>
-            <button class="terminal-btn" onclick="triggerTestLog('ERROR', '模拟硬件打印网关超时异常')">+ 模拟 ERROR</button>
-            <button class="terminal-btn" onclick="refreshLogs()">🔄 刷新</button>
-            <button class="terminal-btn" onclick="clearLocalLogs()">🧹 清屏</button>
-          </div>
-        </div>
-
-        <div class="dev-logs-container" id="logsContainer">
-          <div class="log-line">
-            <span class="log-time">[系统日志就绪]</span>
-            <span class="log-level level-INFO">INIT</span>
-            <span class="log-msg">正在实时轮询并捕获应用层、数据库层、中间件层日志...</span>
+          <div class="dev-logs-container" id="logsContainer">
+            <div class="log-line">
+              <span class="log-time">[系统日志就绪]</span>
+              <span class="log-level level-INFO">INIT</span>
+              <span class="log-msg">正在实时轮询并捕获应用层、数据库层、中间件层日志...</span>
+            </div>
           </div>
         </div>
       </div>
+
+      <!-- ================= Tab 2: 人员组织与 ISO/KBA 资质矩阵 ================= -->
+      <div id="tabContentOrg" style="display: none;">
+        <!-- 到期预警横幅 -->
+        <div id="certWarningBanner" style="background:#fffbeb; border:1px solid #fde68a; border-radius:8px; padding:16px; margin-bottom:20px; display:flex; align-items:center; justify-content:space-between;">
+          <div style="display:flex; align-items:center; gap:12px;">
+            <span style="font-size:24px;">⚠️</span>
+            <div>
+              <div style="font-weight:600; color:#b45309;" id="warningTitle">ISO / KBA 资质预警检测中...</div>
+              <div style="font-size:13px; color:#78350f;" id="warningSubtitle">系统正在比对关键特殊特性工位（Special Characteristics）人员上岗有效性</div>
+            </div>
+          </div>
+          <button class="btn-secondary" onclick="loadOrganizationData()">立即重新核验</button>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 20px; margin-bottom: 24px;">
+          <!-- 部门组织架构树 -->
+          <div class="stat-card" style="display:flex; flex-direction:column;">
+            <div class="stat-header">
+              <span class="stat-label">🏢 企业多级组织架构树 (hr_departments)</span>
+            </div>
+            <div id="deptTreeContainer" style="margin-top:12px; font-size:14px; line-height:1.8;">
+              正在加载多级部门树...
+            </div>
+          </div>
+
+          <!-- 关键岗位资质能力矩阵 -->
+          <div class="stat-card" style="display:flex; flex-direction:column;">
+            <div class="stat-header">
+              <span class="stat-label">🛡️ 关键安全岗位体系 (Special Characteristics)</span>
+            </div>
+            <div id="positionsContainer" style="margin-top:12px; font-size:13px;">
+              正在加载岗位要求...
+            </div>
+          </div>
+        </div>
+
+        <!-- 员工花名册与资质受控状态 -->
+        <div class="stat-card" style="margin-bottom: 24px;">
+          <div class="stat-header" style="margin-bottom: 16px;">
+            <span class="stat-label">📋 在册员工花名册与资质状态表 (hr_employees)</span>
+          </div>
+          <div style="overflow-x: auto;">
+            <table style="width:100%; border-collapse:collapse; text-align:left; font-size:13px;" id="employeesTable">
+              <thead>
+                <tr style="border-bottom: 2px solid var(--border-color); color: var(--text-muted);">
+                  <th style="padding: 10px;">工号</th>
+                  <th style="padding: 10px;">姓名</th>
+                  <th style="padding: 10px;">部门</th>
+                  <th style="padding: 10px;">当前岗位</th>
+                  <th style="padding: 10px;">特殊特性工位</th>
+                  <th style="padding: 10px;">ISO/KBA 合规结论</th>
+                  <th style="padding: 10px;">状态</th>
+                </tr>
+              </thead>
+              <tbody id="employeesTbody">
+                <tr><td colspan="7" style="padding:16px; text-align:center;">正在拉取人员资质记录...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================= Tab 3: 立体 RBAC 角色与数据权限 ================= -->
+      <div id="tabContentRbac" style="display: none;">
+        <div class="stat-card" style="margin-bottom: 24px;">
+          <div class="stat-header" style="margin-bottom: 16px;">
+            <span class="stat-label">🔐 系统角色矩阵与立体数据范围 (docs/03 RBAC+ABAC)</span>
+          </div>
+          <div id="rolesContainer" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px;">
+            正在拉取角色与权限声明...
+          </div>
+        </div>
+      </div>
+
 
       <!-- ERP 业务模块全景 (17 个业务域规划预览) -->
       <div class="section-title">

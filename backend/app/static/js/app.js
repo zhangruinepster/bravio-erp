@@ -248,3 +248,219 @@ function stopPolling() {
   if (logPollTimer) clearInterval(logPollTimer);
   if (healthPollTimer) clearInterval(healthPollTimer);
 }
+
+// ==================== 5. V0.1 组织架构与人员资质交互中心 ====================
+function switchMainTab(tab) {
+  const tabs = ["system", "org", "rbac"];
+  tabs.forEach(t => {
+    const btn = document.getElementById("tabBtn" + t.charAt(0).toUpperCase() + t.slice(1));
+    const content = document.getElementById("tabContent" + t.charAt(0).toUpperCase() + t.slice(1));
+    if (btn) btn.classList.toggle("active", t === tab);
+    if (content) content.style.display = (t === tab) ? "block" : "none";
+  });
+
+  if (tab === "org") {
+    loadOrganizationData();
+  } else if (tab === "rbac") {
+    loadRbacData();
+  }
+}
+
+async function loadOrganizationData() {
+  const token = localStorage.getItem("bravio_token");
+  const headers = { "Authorization": `Bearer ${token}` };
+
+  try {
+    // 1. 获取部门树
+    const treeRes = await fetch("/api/v1/org/departments/tree", { headers });
+    if (treeRes.ok) {
+      const tree = await treeRes.json();
+      renderDeptTree(tree);
+    }
+
+    // 2. 获取岗位
+    const posRes = await fetch("/api/v1/org/positions", { headers });
+    if (posRes.ok) {
+      const positions = await posRes.json();
+      renderPositions(positions);
+    }
+
+    // 3. 获取员工及资质状态
+    const empRes = await fetch("/api/v1/org/employees", { headers });
+    if (empRes.ok) {
+      const emps = await empRes.json();
+      renderEmployees(emps);
+    }
+
+    // 4. 获取资质预警
+    const expRes = await fetch("/api/v1/org/certifications/expiring?days=30", { headers });
+    if (expRes.ok) {
+      const expiring = await expRes.json();
+      renderWarningBanner(expiring);
+    }
+  } catch (err) {
+    console.error("Load organization data failed:", err);
+  }
+}
+
+function renderDeptTree(nodes, indent = 0) {
+  const container = document.getElementById("deptTreeContainer");
+  if (!nodes || nodes.length === 0) {
+    if (indent === 0) container.innerHTML = '<div style="color:var(--text-muted);">暂无部门记录</div>';
+    return "";
+  }
+
+  let html = "";
+  nodes.forEach(node => {
+    const paddingLeft = indent * 20;
+    const badgeColor = node.iso_process_type === "MANAGEMENT" ? "#8b5cf6" : (node.iso_process_type === "CORE" ? "#3b82f6" : "#10b981");
+    html += `
+      <div style="padding-left: ${paddingLeft}px; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between;">
+        <div>
+          <span>📁 <strong>${escapeHtml(node.name)}</strong></span>
+          <span style="font-size:11px; color:#64748b; margin-left:6px;">(${escapeHtml(node.code)})</span>
+        </div>
+        <div>
+          <span style="font-size:11px; padding:2px 6px; border-radius:4px; background:${badgeColor}15; color:${badgeColor}; font-weight:600;">
+            ${node.iso_process_type}
+          </span>
+          <span style="font-size:12px; color:var(--text-muted); margin-left:8px;">${node.employee_count} 人</span>
+        </div>
+      </div>
+    `;
+    if (node.children && node.children.length > 0) {
+      html += renderDeptTree(node.children, indent + 1);
+    }
+  });
+
+  if (indent === 0) {
+    container.innerHTML = html;
+  }
+  return html;
+}
+
+function renderPositions(positions) {
+  const container = document.getElementById("positionsContainer");
+  if (!positions || positions.length === 0) {
+    container.innerHTML = '<div style="color:var(--text-muted);">暂无岗位记录</div>';
+    return;
+  }
+
+  let html = '<div style="display: flex; flex-direction: column; gap: 10px;">';
+  positions.forEach(p => {
+    const isCritical = p.is_safety_critical;
+    html += `
+      <div style="padding: 10px; border: 1px solid var(--border-color); border-radius: 6px; background: ${isCritical ? '#fef2f2' : 'transparent'};">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <strong>${escapeHtml(p.title)}</strong>
+          ${isCritical ? '<span style="background:#fee2e2; color:#dc2626; font-size:11px; padding:2px 6px; border-radius:4px; font-weight:600;">⚠️ 特殊特性关键工位</span>' : '<span style="font-size:11px; color:#64748b;">常规岗位</span>'}
+        </div>
+        <div style="font-size:12px; color:var(--text-muted); margin-top:4px;">
+          ${escapeHtml(p.description || "无描述")}
+        </div>
+        ${p.required_cert_types && p.required_cert_types.length > 0 ? `
+          <div style="margin-top:6px; font-size:11px; color:#475569;">
+            必需证书: ${p.required_cert_types.map(c => `<code style="background:#e2e8f0; padding:1px 4px; border-radius:3px;">${escapeHtml(c)}</code>`).join(" ")}
+          </div>
+        ` : ''}
+      </div>
+    `;
+  });
+  html += '</div>';
+  container.innerHTML = html;
+}
+
+function renderEmployees(emps) {
+  const tbody = document.getElementById("employeesTbody");
+  if (!emps || emps.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="7" style="padding:16px; text-align:center; color:var(--text-muted);">暂无员工档案</td></tr>';
+    return;
+  }
+
+  let html = "";
+  emps.forEach(e => {
+    const comp = e.competency_status || {};
+    let compBadge = '<span style="color:#10b981; font-weight:600;">✓ 资质合规</span>';
+    if (comp.is_safety_critical_job) {
+      if (!comp.is_compliant) {
+        compBadge = '<span style="background:#fee2e2; color:#dc2626; padding:2px 6px; border-radius:4px; font-weight:600;">❌ 资质缺失阻断</span>';
+      } else if (comp.warning_cert_types && comp.warning_cert_types.length > 0) {
+        compBadge = `<span style="background:#fef3c7; color:#d97706; padding:2px 6px; border-radius:4px; font-weight:600;" title="${escapeHtml(comp.warning_cert_types.join('; '))}">⚠️ 即将到期(${comp.warning_cert_types.length})</span>`;
+      }
+    }
+
+    html += `
+      <tr style="border-bottom: 1px solid var(--border-color);">
+        <td style="padding: 10px; font-family:monospace; font-weight:600;">${escapeHtml(e.employee_no)}</td>
+        <td style="padding: 10px;"><strong>${escapeHtml(e.name)}</strong></td>
+        <td style="padding: 10px;">${escapeHtml(e.department_name || '-')}</td>
+        <td style="padding: 10px;">${escapeHtml(e.job_title || '-')}</td>
+        <td style="padding: 10px;">${comp.is_safety_critical_job ? '<span style="color:#dc2626; font-weight:600;">★ 关键安全件</span>' : '<span style="color:#94a3b8;">-</span>'}</td>
+        <td style="padding: 10px;">${compBadge}</td>
+        <td style="padding: 10px;"><span style="color:#10b981;">● ${escapeHtml(e.status)}</span></td>
+      </tr>
+    `;
+  });
+  tbody.innerHTML = html;
+}
+
+function renderWarningBanner(expiring) {
+  const banner = document.getElementById("certWarningBanner");
+  const title = document.getElementById("warningTitle");
+  const subtitle = document.getElementById("warningSubtitle");
+
+  if (!expiring || expiring.length === 0) {
+    banner.style.background = "#ecfdf5";
+    banner.style.borderColor = "#a7f3d0";
+    title.textContent = "全员 ISO 9001 & KBA 资质状态受控良好";
+    title.style.color = "#047857";
+    subtitle.textContent = "当前关键安全工位（Special Characteristics）人员上岗资质均在有效期内，无30天内到期警报。";
+    subtitle.style.color = "#065f46";
+  } else {
+    banner.style.background = "#fffbeb";
+    banner.style.borderColor = "#fde68a";
+    title.textContent = `检测到 ${expiring.length} 项 ISO/KBA 资质证书进入30天到期预警窗口！`;
+    title.style.color = "#b45309";
+    const details = expiring.map(c => `${c.cert_name} (编号: ${c.cert_no}, 剩余 ${c.days_to_expire} 天)`).join("；");
+    subtitle.textContent = `为避免审核员查验出现不符合项（Non-Conformity），请及时办理换证或评估：${details}`;
+    subtitle.style.color = "#78350f";
+  }
+}
+
+async function loadRbacData() {
+  const token = localStorage.getItem("bravio_token");
+  const headers = { "Authorization": `Bearer ${token}` };
+  const container = document.getElementById("rolesContainer");
+
+  try {
+    const res = await fetch("/api/v1/rbac/roles", { headers });
+    if (!res.ok) throw new Error("加载角色矩阵失败");
+    const roles = await res.json();
+
+    let html = "";
+    roles.forEach(r => {
+      html += `
+        <div style="border:1px solid var(--border-color); border-radius:8px; padding:16px; background:#fafafa;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+            <strong style="color:var(--text-main); font-size:15px;">${escapeHtml(r.name)}</strong>
+            <span style="font-size:11px; padding:2px 6px; border-radius:4px; background:#e0e7ff; color:#4338ca; font-weight:600;">
+              ${escapeHtml(r.data_scope)}
+            </span>
+          </div>
+          <div style="font-size:12px; color:var(--text-muted); margin-bottom:12px;">
+            代码: <code>${escapeHtml(r.code)}</code><br>
+            ${escapeHtml(r.description || "无说明")}
+          </div>
+          <div style="font-size:12px; font-weight:600; color:#475569; margin-bottom:6px;">关联功能权限 (${(r.permissions || []).length} 项):</div>
+          <div style="max-height:100px; overflow-y:auto; font-size:11px; color:#64748b; line-height:1.6;">
+            ${(r.permissions || []).map(p => `• ${escapeHtml(p.name)} (<code>${escapeHtml(p.code)}</code>)`).join("<br>")}
+          </div>
+        </div>
+      `;
+    });
+    container.innerHTML = html;
+  } catch (err) {
+    container.innerHTML = `<div style="color:#dc2626;">${err.message}</div>`;
+  }
+}
+
