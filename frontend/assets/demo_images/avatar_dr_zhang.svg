@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120">
+  <defs>
+    <linearGradient id="bg-dr" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1e3a8a"/>
+      <stop offset="100%" stop-color="#3b82f6"/>
+    </linearGradient>
+  </defs>
+  <circle cx="60" cy="60" r="56" fill="url(#bg-dr)" stroke="#60a5fa" stroke-width="4"/>
+  <circle cx="60" cy="48" r="22" fill="#fde047"/>
+  <path d="M40 40 Q60 20 80 40 Q75 30 60 30 Q45 30 40 40 Z" fill="#1e293b"/>
+  <rect x="44" y="43" width="13" height="10" rx="2" fill="none" stroke="#0f172a" stroke-width="2.5"/>
+  <rect x="63" y="43" width="13" height="10" rx="2" fill="none" stroke="#0f172a" stroke-width="2.5"/>
+  <line x1="57" y1="48" x2="63" y2="48" stroke="#0f172a" stroke-width="2.5"/>
+  <path d="M32 96 C34 78 48 72 60 72 C72 72 86 78 88 96 Z" fill="#ffffff"/>
+  <path d="M54 72 L60 84 L66 72 Z" fill="#0284c7"/>
+  <circle cx="88" cy="88" r="16" fill="#10b981" stroke="#ffffff" stroke-width="2"/>
+  <text x="88" y="92" font-family="sans-serif" font-size="10" font-weight="bold" fill="#ffffff" text-anchor="middle">Dr</text>
+</svg>

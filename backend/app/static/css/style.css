@@ -178,15 +178,15 @@ body {
 }
 
 .demo-credentials {
-  margin-top: 24px;
-  padding: 16px;
+  margin-top: 22px;
+  padding: 14px 16px;
   background: #f8fafc;
   border-radius: var(--radius-md);
   border: 1px dashed var(--border-color);
 }
 
 .demo-title {
-  font-size: 12px;
+  font-size: 11.5px;
   font-weight: 700;
   color: var(--text-muted);
   text-transform: uppercase;
@@ -194,17 +194,21 @@ body {
   margin-bottom: 10px;
 }
 
-.demo-btn-group {
+.demo-btn-grid {
   display: flex;
-  gap: 8px;
+  flex-direction: column;
+  gap: 7px;
 }
 
-.demo-btn {
-  flex: 1;
-  padding: 8px 10px;
+.demo-btn-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 8px 12px;
   font-size: 12px;
-  font-weight: 500;
-  background: #fff;
+  text-align: left;
+  background: #ffffff;
   border: 1px solid var(--border-color);
   border-radius: var(--radius-sm);
   color: var(--text-main);
@@ -212,9 +216,137 @@ body {
   transition: all var(--transition-fast);
 }
 
-.demo-btn:hover {
+.demo-btn-card:hover {
   border-color: var(--primary);
+  background: #f5f3ff;
+  transform: translateX(2px);
+  box-shadow: 0 2px 6px rgba(79, 70, 229, 0.08);
+}
+
+.demo-btn-icon {
+  font-size: 18px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.demo-btn-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.demo-btn-role {
+  font-weight: 600;
+  font-size: 12.5px;
+  color: var(--text-main);
+  line-height: 1.3;
+}
+
+.demo-btn-account {
+  font-size: 11px;
+  color: var(--text-muted);
+  line-height: 1.3;
+  margin-top: 1px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 顶部快速切角色下拉控件 */
+.quick-role-switcher {
+  position: relative;
+  display: inline-block;
+}
+
+.role-switch-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: #f1f5f9;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-full);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-main);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.role-switch-trigger:hover {
+  background: #e2e8f0;
+  border-color: #cbd5e1;
   color: var(--primary);
+}
+
+.role-dropdown-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: 290px;
+  background: #ffffff;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-xl);
+  padding: 6px;
+  z-index: 1000;
+  animation: fadeInDown 0.15s ease-out;
+}
+
+@keyframes fadeInDown {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.role-dropdown-header {
+  padding: 6px 10px 8px 10px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid var(--border-light);
+  margin-bottom: 4px;
+}
+
+.role-option-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 8px 10px;
+  border: none;
+  background: transparent;
+  border-radius: var(--radius-sm);
+  text-align: left;
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+
+.role-option-btn:hover {
+  background: #f8fafc;
+}
+
+.role-option-btn.active {
+  background: #e0e7ff;
+}
+
+.role-opt-icon {
+  font-size: 18px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.role-opt-name {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-main);
+  line-height: 1.3;
+}
+
+.role-opt-desc {
+  font-size: 11px;
+  color: var(--text-muted);
+  line-height: 1.3;
 }
 
 .auth-alert {

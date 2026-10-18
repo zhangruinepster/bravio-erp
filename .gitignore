@@ -51,6 +51,10 @@ backups_archive/
 *.sql
 *.sql.gz
 *.tar.gz
+uploads/*
+!uploads/demo/
+!uploads/demo/**
+!uploads/.gitkeep
 
 # IDE / OS / Cache
 .idea/

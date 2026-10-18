@@ -44,4 +44,11 @@ async def init_db():
     async with engine.begin() as conn:
         logger.info("Initializing database schema...")
         await conn.run_sync(Base.metadata.create_all)
+        # 兼容性无损平滑迁移：若为 sqlite 且新增了列，自动安全补偿 ALTER TABLE
+        if settings.DATABASE_URL.startswith("sqlite"):
+            from sqlalchemy import text
+            try:
+                await conn.execute(text("ALTER TABLE hr_employees ADD COLUMN avatar_url VARCHAR(500)"))
+            except Exception:
+                pass  # 列已存在
     logger.info("Database schema initialized successfully.")

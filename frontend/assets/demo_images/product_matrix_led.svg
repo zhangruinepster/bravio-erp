@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 150" width="200" height="150">
+  <defs>
+    <linearGradient id="pbg-led" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#090d16"/>
+      <stop offset="100%" stop-color="#1e293b"/>
+    </linearGradient>
+  </defs>
+  <rect width="200" height="150" rx="8" fill="url(#pbg-led)"/>
+  <path d="M20 95 C 40 50, 140 40, 180 65 L 175 105 C 130 115, 60 110, 20 95 Z" fill="#0f172a" stroke="#38bdf8" stroke-width="2.5"/>
+  <circle cx="60" cy="80" r="14" fill="#0369a1" stroke="#67e8f9" stroke-width="2"/>
+  <circle cx="60" cy="80" r="8" fill="#e0f2fe"/>
+  <circle cx="100" cy="78" r="12" fill="#0369a1" stroke="#67e8f9" stroke-width="2"/>
+  <circle cx="100" cy="78" r="6" fill="#e0f2fe"/>
+  <circle cx="138" cy="75" r="10" fill="#0369a1" stroke="#67e8f9" stroke-width="2"/>
+  <circle cx="138" cy="75" r="5" fill="#e0f2fe"/>
+  <path d="M28 88 Q 80 54 172 68" fill="none" stroke="#38bdf8" stroke-width="4" stroke-linecap="round"/>
+  <rect x="10" y="10" width="80" height="18" rx="4" fill="#0284c7" fill-opacity="0.4" stroke="#38bdf8" stroke-width="1"/>
+  <text x="50" y="23" font-family="sans-serif" font-size="9" font-weight="bold" fill="#38bdf8" text-anchor="middle">HD-MATRIX 32</text>
+</svg>

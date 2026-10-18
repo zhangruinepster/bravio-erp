@@ -4,7 +4,7 @@ from pydantic import Field
 
 class Settings(BaseSettings):
     PROJECT_NAME: str = "Bravio ERP"
-    VERSION: str = "0.1.0-dev"
+    VERSION: str = "0.3.2"
     API_V1_STR: str = "/api/v1"
 
     

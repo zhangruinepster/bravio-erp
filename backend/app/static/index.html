@@ -37,13 +37,49 @@
         </form>
 
         <div class="demo-credentials">
-          <div class="demo-title">⚡ 快速角色测试切换（点击自动填充）</div>
-          <div class="demo-btn-group">
-            <button type="button" class="demo-btn" onclick="fillCredentials('admin', 'admin123')">
-              🔑 系统总管理员 (admin)
+          <div class="demo-title" style="display:flex; justify-content:space-between; align-items:center;">
+            <span>⚡ 真实人事账号·快速测试切换</span>
+            <span style="font-size:11px; color:var(--text-muted); font-weight:normal;">点击秒级填充登入</span>
+          </div>
+          <div class="demo-btn-grid">
+            <button type="button" class="demo-btn-card" onclick="fillCredentials('admin', 'admin123', true)">
+              <div class="demo-btn-icon">🔑</div>
+              <div class="demo-btn-info">
+                <div class="demo-btn-role">系统总管理员 (admin)</div>
+                <div class="demo-btn-account">admin / admin123 · 底层系统运维与实时日志</div>
+              </div>
             </button>
-            <button type="button" class="demo-btn" onclick="fillCredentials('operator', 'operator123')">
-              👷 车间质检员 (operator)
+
+            <button type="button" class="demo-btn-card" onclick="fillCredentials('gm', 'gm123', true)">
+              <div class="demo-btn-icon">👔</div>
+              <div class="demo-btn-info">
+                <div class="demo-btn-role">陈总裁 · 集团总经理 (gm)</div>
+                <div class="demo-btn-account">gm / gm123 · 全业务模块 (严禁访问后台及日志)</div>
+              </div>
+            </button>
+
+            <button type="button" class="demo-btn-card" onclick="fillCredentials('pe', 'pe123', true)">
+              <div class="demo-btn-icon">📐</div>
+              <div class="demo-btn-info">
+                <div class="demo-btn-role">王工程 · 产品工程师 (pe)</div>
+                <div class="demo-btn-account">pe / pe123 · 研发中心 (测试产品模组与BOM)</div>
+              </div>
+            </button>
+
+            <button type="button" class="demo-btn-card" onclick="fillCredentials('qe', 'qe123', true)">
+              <div class="demo-btn-icon">🛡️</div>
+              <div class="demo-btn-info">
+                <div class="demo-btn-role">刘质保 · 质量工程师 (qe)</div>
+                <div class="demo-btn-account">qe / qe123 · 质保中心 (首件放行/8D/KBA资质)</div>
+              </div>
+            </button>
+
+            <button type="button" class="demo-btn-card" onclick="fillCredentials('supplier', 'supplier123', true)">
+              <div class="demo-btn-icon">🏭</div>
+              <div class="demo-btn-info">
+                <div class="demo-btn-role">张供应 · 供应商账户 (supplier)</div>
+                <div class="demo-btn-account">supplier / supplier123 · 制造协同 (测试外协制造/送货)</div>
+              </div>
             </button>
           </div>
         </div>
@@ -79,6 +115,52 @@
       </div>
 
       <div class="nav-right">
+        <!-- 快速测试角色快捷切换器 (供测试各模块权限) -->
+        <div class="quick-role-switcher" title="测试专用：免退出快速切换真实人事角色">
+          <button type="button" class="role-switch-trigger" onclick="toggleRoleSwitchDropdown(event)">
+            <span>⚡ 切换测试角色</span>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M7 10l5 5 5-5z"/></svg>
+          </button>
+          <div id="quickRoleDropdown" class="role-dropdown-menu" style="display:none;" onclick="event.stopPropagation()">
+            <div class="role-dropdown-header">切换到真实人事账号进行测试</div>
+            <button type="button" class="role-option-btn" onclick="quickSwitchUser('admin', 'admin123')">
+              <span class="role-opt-icon">🔑</span>
+              <div>
+                <div class="role-opt-name">系统总管理员 (admin)</div>
+                <div class="role-opt-desc">最高权限 · 系统运维与实时日志</div>
+              </div>
+            </button>
+            <button type="button" class="role-option-btn" onclick="quickSwitchUser('gm', 'gm123')">
+              <span class="role-opt-icon">👔</span>
+              <div>
+                <div class="role-opt-name">陈总裁 · 集团总经理 (gm)</div>
+                <div class="role-opt-desc">全业务模块 · 严格阻断后台与日志</div>
+              </div>
+            </button>
+            <button type="button" class="role-option-btn" onclick="quickSwitchUser('pe', 'pe123')">
+              <span class="role-opt-icon">📐</span>
+              <div>
+                <div class="role-opt-name">王工程 · 产品工程师 (pe)</div>
+                <div class="role-opt-desc">研发中心 · 测试产品模组与BOM</div>
+              </div>
+            </button>
+            <button type="button" class="role-option-btn" onclick="quickSwitchUser('qe', 'qe123')">
+              <span class="role-opt-icon">🛡️</span>
+              <div>
+                <div class="role-opt-name">刘质保 · 质量工程师 (qe)</div>
+                <div class="role-opt-desc">质保中心 · 测试质量放行与8D</div>
+              </div>
+            </button>
+            <button type="button" class="role-option-btn" onclick="quickSwitchUser('supplier', 'supplier123')">
+              <span class="role-opt-icon">🏭</span>
+              <div>
+                <div class="role-opt-name">张供应 · 供应商账户 (supplier)</div>
+                <div class="role-opt-desc">制造协同 · 测试供应商生产协同</div>
+              </div>
+            </button>
+          </div>
+        </div>
+
         <div class="user-profile">
           <div class="user-avatar" id="userAvatar">A</div>
           <div class="user-meta">
@@ -312,26 +394,26 @@
         </div>
       </section>
 
-      <!-- ================= APP 3: 车间质检与生产工作台 (车间质检员等业务角色专属) ================= -->
+      <!-- ================= APP 3: 车间制造与工位执行工作台 (MES & Shop Floor) ================= -->
       <section id="appViewMes" style="display: none;">
         <div class="page-header">
           <div>
-            <h2 class="page-title">🏭 车间质检与工位执行工作台 (MES & Inspection)</h2>
-            <p class="page-subtitle">当前在线操作员工位放行检查、首件检验标准（遵循 ISO 9001:2015 与 KBA 规范）</p>
+            <h2 class="page-title">🏭 车间制造执行与工位协同工作台 (MES & Shop Floor)</h2>
+            <p class="page-subtitle">当前在线工位操作放行、过程数据采集与生产一致性审查（遵循 ISO 9001:2015 与 KBA 规范）</p>
           </div>
         </div>
 
         <div class="stat-card" style="margin-bottom:20px;">
           <div style="display:flex; align-items:center; gap:16px;">
-            <div style="font-size:36px;">👷</div>
+            <div style="font-size:36px;" id="mesUserIcon">👷</div>
             <div>
-              <div style="font-size:16px; font-weight:700;" id="mesOperatorName">车间质检操作员 (operator)</div>
-              <div style="font-size:13px; color:var(--text-muted); margin-top:4px;">
-                所属部门：先进制造与供应链中心 · 岗位：总装首件检测与特殊特性质检员
+              <div style="font-size:16px; font-weight:700;" id="mesOperatorName">当前在线业务用户</div>
+              <div style="font-size:13px; color:var(--text-muted); margin-top:4px;" id="mesOperatorMeta">
+                所属部门：先进制造与供应链中心 · 岗位：制造协同与工位执行
               </div>
               <div style="margin-top:8px;">
-                <span style="background:#ecfdf5; color:#047857; font-size:12px; padding:3px 8px; border-radius:4px; font-weight:600;">
-                  ✓ 上岗资质核验合格 (Special Characteristic Certified)
+                <span id="mesOperatorBadge" style="background:#ecfdf5; color:#047857; font-size:12px; padding:3px 8px; border-radius:4px; font-weight:600;">
+                  ✓ 业务操作权限已校验 (Role Verified)
                 </span>
               </div>
             </div>
@@ -340,10 +422,10 @@
 
         <div class="stat-card">
           <div class="stat-header">
-            <span class="stat-label">📋 今日质检任务与待办清单</span>
+            <span class="stat-label">📋 今日业务执行与工位协同待办清单</span>
           </div>
-          <div style="padding:16px 0; color:var(--text-muted); font-size:13.5px;">
-            暂无待处理不符合项。所有特殊特性关键检验工位状态受控，生产一致性（CoP）数据正常采集。
+          <div style="padding:16px 0; color:var(--text-muted); font-size:13.5px;" id="mesTaskSummary">
+            当前处于 V0.1 组织与权限基础框架。所有工位安全特性、生产一致性（CoP）数据流受控。
           </div>
         </div>
       </section>
@@ -370,30 +452,30 @@
           <div class="app-tile-title">人力资源与组织</div>
         </div>
 
-        <!-- App 2: 车间质检工作台 (质检员) -->
+        <!-- App 2: 车间与制造执行 -->
         <div class="app-tile" onclick="selectApp('mes')">
           <div class="app-tile-icon" style="background:#dcfce7; color:#15803d;">🏭</div>
-          <div class="app-tile-title">车间质检工作台</div>
+          <div class="app-tile-title">车间与制造协同</div>
         </div>
 
-        <!-- App 3: 系统运维控制台 (仅限系统管理员) -->
+        <!-- App 3: 系统运维控制台 (仅限系统管理员，总经理严禁访问) -->
         <div class="app-tile" id="appTileSystem" onclick="selectApp('system')">
           <div class="app-tile-icon" style="background:#fee2e2; color:#dc2626;">🛠️</div>
           <div class="app-tile-title">系统运维控制台</div>
         </div>
 
-        <!-- 规划中的其他业务模块 (依据 docs 架构规划) -->
-        <div class="app-tile disabled" title="规划中 (Doc 13)">
-          <div class="app-tile-icon" style="background:#dbeafe; color:#1d4ed8;">📋</div>
-          <div class="app-tile-title">工程变更 (ECM)</div>
+        <!-- 规划中的其他业务模块 (依据需求：缺少的功能模块不着急稍后版本中创建) -->
+        <div class="app-tile disabled" title="稍后版本创建 (用来配合产品工程师测试)">
+          <div class="app-tile-icon" style="background:#dbeafe; color:#1d4ed8;">📐</div>
+          <div class="app-tile-title">产品模组与BOM</div>
         </div>
-        <div class="app-tile disabled" title="规划中 (Doc 14)">
+        <div class="app-tile disabled" title="稍后版本创建 (用来配合质量工程师测试)">
           <div class="app-tile-icon" style="background:#fef3c7; color:#b45309;">🛡️</div>
-          <div class="app-tile-title">质量与8D客诉</div>
+          <div class="app-tile-title">质量工程师与8D</div>
         </div>
-        <div class="app-tile disabled" title="规划中 (Doc 08)">
+        <div class="app-tile disabled" title="稍后版本创建 (用来配合供应商账户测试)">
           <div class="app-tile-icon" style="background:#f3e8ff; color:#7e22ce;">📦</div>
-          <div class="app-tile-title">WMS仓储物流</div>
+          <div class="app-tile-title">供应商外协制造</div>
         </div>
       </div>
     </div>

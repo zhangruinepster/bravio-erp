@@ -75,6 +75,7 @@ class Employee(BaseAuditModel):
     status = Column(SQLEnum(EmployeeStatus), default=EmployeeStatus.ACTIVE, nullable=False, index=True)
     hire_date = Column(DateTime, nullable=True)
     user_id = Column(String(36), ForeignKey("sys_users.id", ondelete="SET NULL"), nullable=True, unique=True) # 绑定的登录账号
+    avatar_url = Column(String(500), nullable=True) # 员工电子档案头像存储路径
 
     department = relationship("Department", back_populates="employees")
     job_position = relationship("JobPosition", back_populates="employees")

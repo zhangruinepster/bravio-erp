@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120">
+  <defs>
+    <linearGradient id="bg-gm" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0f172a"/>
+      <stop offset="100%" stop-color="#334155"/>
+    </linearGradient>
+  </defs>
+  <circle cx="60" cy="60" r="56" fill="url(#bg-gm)" stroke="#94a3b8" stroke-width="4"/>
+  <circle cx="60" cy="48" r="22" fill="#fef08a"/>
+  <path d="M38 42 Q60 22 82 42 Z" fill="#475569"/>
+  <path d="M32 96 C34 78 48 72 60 72 C72 72 86 78 88 96 Z" fill="#020617"/>
+  <polygon points="58,74 62,74 64,88 60,94 56,88" fill="#ef4444"/>
+  <circle cx="88" cy="88" r="16" fill="#eab308" stroke="#ffffff" stroke-width="2"/>
+  <text x="88" y="92" font-family="sans-serif" font-size="9" font-weight="bold" fill="#0f172a" text-anchor="middle">GM</text>
+</svg>

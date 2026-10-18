@@ -42,14 +42,30 @@ function showDashboardView(user) {
   document.getElementById("authView").style.display = "none";
   document.getElementById("dashboardView").style.display = "flex";
 
-  // 1. 渲染用户个人信息
+  // 1. 渲染用户个人信息与角色职位
   const displayName = user.full_name || user.username;
   document.getElementById("userName").textContent = displayName;
   document.getElementById("userAvatar").textContent = displayName[0].toUpperCase();
-  document.getElementById("userRole").textContent = (user.role || "OPERATOR").toUpperCase();
 
-  // 2. 角色与权限视图隔离 (核心安全规范 - 用户无权则看不到系统工作台)
-  const isAdmin = user.is_superuser || user.role === "admin";
+  let roleLabel = "OPERATOR";
+  if (user.is_superuser || user.role === "admin") {
+    roleLabel = "超级管理员";
+  } else if (user.username === "gm") {
+    roleLabel = "集团总经理";
+  } else if (user.username === "pe") {
+    roleLabel = "产品工程师";
+  } else if (user.username === "qe") {
+    roleLabel = "质量工程师";
+  } else if (user.username === "supplier") {
+    roleLabel = "供应商账户";
+  } else if (user.roles && user.roles.length > 0) {
+    roleLabel = user.roles[0].name;
+  }
+  document.getElementById("userRole").textContent = roleLabel;
+
+  // 2. 角色与权限视图隔离 (核心安全规范 - 仅系统总管理员可见运维控制台与日志流)
+  // 总经理(gm) 与 其他业务人员严禁访问系统运维控制台与日志！
+  const isAdmin = Boolean(user.is_superuser || user.role === "admin");
   const appTileSystem = document.getElementById("appTileSystem");
   if (appTileSystem) {
     appTileSystem.style.display = isAdmin ? "flex" : "none";
@@ -62,7 +78,7 @@ function showDashboardView(user) {
     refreshLogs();
     startPolling();
   } else {
-    // 普通车间质检员：默认进入 HR 或 车间质检工作台，完全阻断后台运维与实时日志！
+    // 严格阻断非管理员的系统日志后台轮询
     stopPolling();
     selectApp("hr");
   }
@@ -72,13 +88,76 @@ function showDashboardView(user) {
   loadRolesAndPermissions();
 }
 
-function fillCredentials(username, password) {
+function fillCredentials(username, password, autoLogin = false) {
   document.getElementById("username").value = username;
   document.getElementById("password").value = password;
+  if (autoLogin) {
+    const fakeEvent = { preventDefault: () => {} };
+    handleLogin(fakeEvent);
+  }
+}
+
+// 顶部快捷测试角色切换下拉菜单
+function toggleRoleSwitchDropdown(e) {
+  if (e) e.stopPropagation();
+  const dropdown = document.getElementById("quickRoleDropdown");
+  if (!dropdown) return;
+  const isHidden = dropdown.style.display === "none" || !dropdown.style.display;
+  dropdown.style.display = isHidden ? "block" : "none";
+}
+
+// 点击网页空白区域自动关闭下拉框
+document.addEventListener("click", () => {
+  const dropdown = document.getElementById("quickRoleDropdown");
+  if (dropdown) dropdown.style.display = "none";
+});
+
+// 免登出快速切换测试账号
+async function quickSwitchUser(username, password) {
+  const dropdown = document.getElementById("quickRoleDropdown");
+  if (dropdown) dropdown.style.display = "none";
+
+  try {
+    const res = await fetch("/api/v1/auth/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username, password })
+    });
+
+    const data = await res.json();
+    if (!res.ok) {
+      alert("切换失败: " + (data.detail || data.message || "登录错误"));
+      return;
+    }
+
+    localStorage.setItem("bravio_token", data.token.access_token);
+    localStorage.setItem("bravio_user", JSON.stringify(data.user));
+    showDashboardView(data.user);
+
+    // 提示快速切换成功
+    const alertBanner = document.createElement("div");
+    alertBanner.style.position = "fixed";
+    alertBanner.style.top = "60px";
+    alertBanner.style.right = "24px";
+    alertBanner.style.background = "#10b981";
+    alertBanner.style.color = "#ffffff";
+    alertBanner.style.padding = "10px 18px";
+    alertBanner.style.borderRadius = "8px";
+    alertBanner.style.boxShadow = "0 10px 25px -5px rgba(0,0,0,0.2)";
+    alertBanner.style.fontSize = "13px";
+    alertBanner.style.fontWeight = "600";
+    alertBanner.style.zIndex = "9999";
+    alertBanner.textContent = `⚡ 已无缝切换到测试账号: ${data.user.full_name || data.user.username} (${data.user.username})`;
+    document.body.appendChild(alertBanner);
+    setTimeout(() => alertBanner.remove(), 2500);
+
+  } catch (err) {
+    alert("切换失败: " + err.message);
+  }
 }
 
 async function handleLogin(e) {
-  e.preventDefault();
+  if (e && e.preventDefault) e.preventDefault();
   const username = document.getElementById("username").value.trim();
   const password = document.getElementById("password").value;
   const alertEl = document.getElementById("authAlert");
@@ -169,10 +248,14 @@ function selectApp(appName) {
     navSub.textContent = "/ 员工档案";
     loadOrganizationData();
   } else if (appName === "system") {
-    // 安全阻断：非管理员禁止进入运维
+    // 安全阻断：总经理与普通业务人员严禁进入系统运维控制台
     const isAdmin = currentUser && (currentUser.is_superuser || currentUser.role === "admin");
     if (!isAdmin) {
-      alert("安全阻断：您当前的角色不具备底层系统运维控制台的访问权限！");
+      if (currentUser && currentUser.username === "gm") {
+        alert("【安全合规隔离】陈总裁（集团总经理）拥有全企业业务模块最高管辖权，但遵循安全最小化与审计合规原则，严禁访问底层系统运维控制台与开发者日志！");
+      } else {
+        alert("【安全阻断】您当前的角色不具备底层系统运维控制台的访问权限！");
+      }
       selectApp("hr");
       return;
     }
@@ -183,10 +266,49 @@ function selectApp(appName) {
     fetchHealth();
   } else if (appName === "mes") {
     appViewMes.style.display = "block";
-    navTitle.textContent = "🏭 车间质检与生产工作台";
-    navSub.textContent = "/ 首件放行检验";
+    navTitle.textContent = "🏭 车间与制造协同";
+    navSub.textContent = "/ 业务执行工作台";
+
     if (currentUser) {
-      document.getElementById("mesOperatorName").textContent = `${currentUser.full_name || currentUser.username} (当前在线操作员)`;
+      const uName = currentUser.username;
+      const fName = currentUser.full_name || currentUser.username;
+      const mesNameEl = document.getElementById("mesOperatorName");
+      const mesMetaEl = document.getElementById("mesOperatorMeta");
+      const mesBadgeEl = document.getElementById("mesOperatorBadge");
+      const mesIconEl = document.getElementById("mesUserIcon");
+      const mesTaskEl = document.getElementById("mesTaskSummary");
+
+      if (uName === "gm") {
+        if (mesIconEl) mesIconEl.textContent = "👔";
+        if (mesNameEl) mesNameEl.textContent = `${fName} (集团总经理)`;
+        if (mesMetaEl) mesMetaEl.textContent = "所属部门：Bravio 集团总部 · 统管全企业各业务中心 (严禁访问系统运维与日志)";
+        if (mesBadgeEl) mesBadgeEl.textContent = "★ 企业最高经营管理授权 (全业务数据流可达)";
+        if (mesTaskEl) mesTaskEl.textContent = "经营视角：正在监控制造中心、质保中心与研发中心的协同推进。系统后台运维与日志受安全合规审计隔离。";
+      } else if (uName === "pe") {
+        if (mesIconEl) mesIconEl.textContent = "📐";
+        if (mesNameEl) mesNameEl.textContent = `${fName} (产品工程师)`;
+        if (mesMetaEl) mesMetaEl.textContent = "所属部门：研发与工程技术中心 · 岗位：产品研发与硬件工程主管";
+        if (mesBadgeEl) mesBadgeEl.textContent = "✓ 产品物料与BOM研发工程师资质";
+        if (mesTaskEl) mesTaskEl.textContent = "研发待办：配合稍后版本中的【产品模组与BOM】进行硬件图号主数据、工程物料清单维护。";
+      } else if (uName === "qe") {
+        if (mesIconEl) mesIconEl.textContent = "🛡️";
+        if (mesNameEl) mesNameEl.textContent = `${fName} (质量工程师)`;
+        if (mesMetaEl) mesMetaEl.textContent = "所属部门：质量保证与法规合规中心 · 岗位：汽车特殊特性与首件质量工程师";
+        if (mesBadgeEl) mesBadgeEl.textContent = "✓ 具有汽车特殊特性(SC/CC)质检与德国KBA一致性审查资质";
+        if (mesTaskEl) mesTaskEl.textContent = "质保待办：配合稍后版本中的【质量工程师与8D客诉】进行进料抽检、首件放行与生产一致性审查。";
+      } else if (uName === "supplier") {
+        if (mesIconEl) mesIconEl.textContent = "🏭";
+        if (mesNameEl) mesNameEl.textContent = `${fName} (供应商专员)`;
+        if (mesMetaEl) mesMetaEl.textContent = "所属部门：先进制造与供应链中心 · 岗位：供应链采购与外协制造主管";
+        if (mesBadgeEl) mesBadgeEl.textContent = "✓ 供应商协同与外协制造交接权限";
+        if (mesTaskEl) mesTaskEl.textContent = "供应链待办：配合稍后版本中的【供应商外协制造】进行批次送货确认、外协加工进度跟踪。";
+      } else {
+        if (mesIconEl) mesIconEl.textContent = "🔑";
+        if (mesNameEl) mesNameEl.textContent = `${fName} (系统总管理员)`;
+        if (mesMetaEl) mesMetaEl.textContent = "拥有企业底层系统架构与全局数据访问权";
+        if (mesBadgeEl) mesBadgeEl.textContent = "✓ 系统最高超级管理员权限 (Superuser)";
+        if (mesTaskEl) mesTaskEl.textContent = "运维概况：全系统服务集群健康正常。";
+      }
     }
   }
 }

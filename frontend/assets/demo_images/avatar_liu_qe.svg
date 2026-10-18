@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120">
+  <defs>
+    <linearGradient id="bg-qe" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0284c7"/>
+      <stop offset="100%" stop-color="#38bdf8"/>
+    </linearGradient>
+  </defs>
+  <circle cx="60" cy="60" r="56" fill="url(#bg-qe)" stroke="#7dd3fc" stroke-width="4"/>
+  <circle cx="60" cy="48" r="22" fill="#ffedd5"/>
+  <path d="M38 42 Q60 22 82 42 Z" fill="#0f172a"/>
+  <path d="M32 96 C34 78 48 72 60 72 C72 72 86 78 88 96 Z" fill="#0369a1"/>
+  <circle cx="88" cy="88" r="16" fill="#0284c7" stroke="#ffffff" stroke-width="2"/>
+  <text x="88" y="92" font-family="sans-serif" font-size="9" font-weight="bold" fill="#ffffff" text-anchor="middle">QE</text>
+</svg>

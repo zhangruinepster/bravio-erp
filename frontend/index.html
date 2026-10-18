@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bravio ERP 企业数字化中枢 (V0.3.2)</title>
+  <link rel="stylesheet" href="css/style.css?v=0.3.2">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220%22%20%2224%22><text y=%2220%22 font-size=%2220%22>⚡</text></svg>">
+</head>
+<body>
+
+  <!-- ================= 1. 登录会话视图 ================= -->
+  <div id="loginView" style="display:flex; min-height:100vh; align-items:center; justify-content:center; padding:24px; background:radial-gradient(circle at 10% 20%, rgba(79, 70, 229, 0.08) 0%, #f8fafc 90%);">
+    <div style="width:100%; max-width:440px; background:#fff; border-radius:16px; border:1px solid var(--border-color); box-shadow:var(--shadow-xl); overflow:hidden;">
+      <div style="padding:32px 32px 20px 32px; text-align:center; border-bottom:1px solid var(--border-light);">
+        <div style="display:inline-flex; align-items:center; gap:8px; padding:6px 14px; background:var(--primary-light); color:var(--primary); border-radius:9999px; font-size:12px; font-weight:700; margin-bottom:12px;">
+          Bravio ERP Enterprise v0.3.2
+        </div>
+        <h1 style="font-size:22px; font-weight:800; color:var(--text-main);">企业数字化综合智能中枢</h1>
+        <p style="font-size:13px; color:var(--text-muted); margin-top:4px;">符合 ISO 9001 与德国 KBA Type Approval 车规级标准</p>
+      </div>
+
+      <div style="padding:28px 32px 32px 32px;">
+        <form id="loginForm" onsubmit="event.preventDefault(); window.handleManualLogin();">
+          <div class="form-group">
+            <label class="form-label" for="loginUser">登录账号 / 工号</label>
+            <input type="text" id="loginUser" class="form-input" placeholder="输入账号" required autocomplete="username">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="loginPass">登录密码</label>
+            <input type="password" id="loginPass" class="form-input" placeholder="输入密码" required autocomplete="current-password">
+          </div>
+          <button type="submit" id="loginSubmitBtn" class="btn-primary" style="width:100%; padding:10px; margin-top:6px;">安全建立加密会话</button>
+        </form>
+
+        <div style="margin-top:24px; padding:16px; background:#f8fafc; border:1px dashed var(--border-color); border-radius:10px;">
+          <div style="font-size:12px; font-weight:700; color:var(--text-muted); text-transform:uppercase; margin-bottom:10px; display:flex; justify-content:space-between;">
+            <span>⚡ 真实人事账号·快速测试切换</span>
+            <span style="font-weight:normal; font-size:11px;">点击秒级登入</span>
+          </div>
+
+          <div style="display:flex; flex-direction:column; gap:8px;">
+            <button type="button" class="btn-secondary" style="display:flex; align-items:center; gap:10px; text-align:left; padding:8px 12px;" onclick="window.autoFillAndLogin('admin', 'admin123')">
+              <span style="font-size:18px;">🔑</span>
+              <div>
+                <div style="font-weight:700; font-size:12.5px;">系统总管理员 (admin)</div>
+                <div style="font-size:11px; color:var(--text-muted);">底层系统运维与实时日志流</div>
+              </div>
+            </button>
+
+            <button type="button" class="btn-secondary" style="display:flex; align-items:center; gap:10px; text-align:left; padding:8px 12px;" onclick="window.autoFillAndLogin('gm', 'gm123')">
+              <span style="font-size:18px;">👔</span>
+              <div>
+                <div style="font-weight:700; font-size:12.5px;">陈总裁 · 集团总经理 (gm)</div>
+                <div style="font-size:11px; color:var(--text-muted);">全业务模块驾驶舱 (严禁访问后台及日志)</div>
+              </div>
+            </button>
+
+            <button type="button" class="btn-secondary" style="display:flex; align-items:center; gap:10px; text-align:left; padding:8px 12px;" onclick="window.autoFillAndLogin('pe', 'pe123')">
+              <span style="font-size:18px;">📐</span>
+              <div>
+                <div style="font-weight:700; font-size:12.5px;">王工程 · 产品工程师 (pe)</div>
+                <div style="font-size:11px; color:var(--text-muted);">研发中心·产品主数据/APQP/BOM/ECM</div>
+              </div>
+            </button>
+
+            <button type="button" class="btn-secondary" style="display:flex; align-items:center; gap:10px; text-align:left; padding:8px 12px;" onclick="window.autoFillAndLogin('qe', 'qe123')">
+              <span style="font-size:18px;">🛡️</span>
+              <div>
+                <div style="font-weight:700; font-size:12.5px;">刘质保 · 质量工程师 (qe)</div>
+                <div style="font-size:11px; color:var(--text-muted);">质保中心·进出厂质检/8D失效/KBA资质</div>
+              </div>
+            </button>
+
+            <button type="button" class="btn-secondary" style="display:flex; align-items:center; gap:10px; text-align:left; padding:8px 12px;" onclick="window.autoFillAndLogin('supplier', 'supplier123')">
+              <span style="font-size:18px;">🏭</span>
+              <div>
+                <div style="font-weight:700; font-size:12.5px;">张供应 · 供应商账户 (supplier)</div>
+                <div style="font-size:11px; color:var(--text-muted);">供应链中心·商业伙伴/代工单/双灯防呆</div>
+              </div>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= 2. 主工作台界面 (按部门和角色驱动) ================= -->
+  <div id="mainAppView" style="display:none;">
+    <!-- 顶部导航栏 -->
+    <header class="top-navbar">
+      <div class="nav-left">
+        <!-- Odoo 九宫格 App 切换按钮 -->
+        <button class="app-switcher-btn" onclick="AppManager.toggleAppSwitcher()" title="切换业务部门中心 (App Switcher)">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+            <circle cx="5" cy="5" r="2.5"/><circle cx="12" cy="5" r="2.5"/><circle cx="19" cy="5" r="2.5"/>
+            <circle cx="5" cy="12" r="2.5"/><circle cx="12" cy="12" r="2.5"/><circle cx="19" cy="12" r="2.5"/>
+            <circle cx="5" cy="19" r="2.5"/><circle cx="12" cy="19" r="2.5"/><circle cx="19" cy="19" r="2.5"/>
+          </svg>
+        </button>
+
+        <div class="nav-brand">
+          <div class="brand-icon">B</div>
+          <span>Bravio ERP</span>
+        </div>
+
+        <div class="nav-breadcrumbs">
+          <span>/</span>
+          <strong id="breadcrumbDept" style="color:var(--text-main);">🏢 总裁办与执行委员会</strong>
+        </div>
+      </div>
+
+      <div class="nav-right">
+        <!-- 免登出快速切换测试身份下拉菜单 -->
+        <div class="role-dropdown-container">
+          <button class="btn-secondary" style="display:flex; align-items:center; gap:6px; font-weight:600; border-radius:9999px; padding:5px 12px;" onclick="AppManager.toggleRoleDropdown(event)">
+            <span>⚡ 切换测试身份</span>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M7 10l5 5 5-5z"/></svg>
+          </button>
+          <div id="roleDropdownMenu" class="role-dropdown-menu" style="display:none;" onclick="event.stopPropagation()">
+            <div style="font-size:11px; font-weight:700; color:var(--text-muted); text-transform:uppercase; padding:6px 10px 8px 10px; border-bottom:1px solid var(--border-light);">
+              一键切换至真实人事账户
+            </div>
+            <button class="role-select-item" onclick="AppManager.quickSwitchRole('admin', 'admin123')">
+              <span style="font-size:16px;">🔑</span>
+              <div>
+                <div style="font-weight:700; font-size:12px;">系统总管理员 (admin)</div>
+                <div style="font-size:11px; color:var(--text-muted);">系统运维与实时日志</div>
+              </div>
+            </button>
+            <button class="role-select-item" onclick="AppManager.quickSwitchRole('gm', 'gm123')">
+              <span style="font-size:16px;">👔</span>
+              <div>
+                <div style="font-weight:700; font-size:12px;">陈总裁 · 集团总经理 (gm)</div>
+                <div style="font-size:11px; color:var(--text-muted);">全业务驾驶舱 (阻断后台及日志)</div>
+              </div>
+            </button>
+            <button class="role-select-item" onclick="AppManager.quickSwitchRole('pe', 'pe123')">
+              <span style="font-size:16px;">📐</span>
+              <div>
+                <div style="font-weight:700; font-size:12px;">王工程 · 产品工程师 (pe)</div>
+                <div style="font-size:11px; color:var(--text-muted);">研发中心·产品模组与BOM</div>
+              </div>
+            </button>
+            <button class="role-select-item" onclick="AppManager.quickSwitchRole('qe', 'qe123')">
+              <span style="font-size:16px;">🛡️</span>
+              <div>
+                <div style="font-weight:700; font-size:12px;">刘质保 · 质量工程师 (qe)</div>
+                <div style="font-size:11px; color:var(--text-muted);">质保中心·质检/8D客诉</div>
+              </div>
+            </button>
+            <button class="role-select-item" onclick="AppManager.quickSwitchRole('supplier', 'supplier123')">
+              <span style="font-size:16px;">🏭</span>
+              <div>
+                <div style="font-weight:700; font-size:12px;">张供应 · 供应商账户 (supplier)</div>
+                <div style="font-size:11px; color:var(--text-muted);">供应链中心·代工协同与防呆</div>
+              </div>
+            </button>
+          </div>
+        </div>
+
+        <div class="user-badge-box">
+          <div class="user-avatar-circle" id="topUserAvatar">A</div>
+          <div>
+            <div id="topUserName" style="font-weight:700; font-size:12.5px; line-height:1.2;">系统管理员</div>
+            <div id="topUserRole" style="font-size:11px; color:var(--text-muted); line-height:1.2;">ADMIN</div>
+          </div>
+        </div>
+
+        <button class="btn-secondary" onclick="AuthService.logout()" style="padding:5px 10px;">安全退出</button>
+      </div>
+    </header>
+
+    <!-- 工作台主体区域 -->
+    <main class="main-wrapper" id="departmentWorkspace">
+      <!-- 动态加载各部门视图 -->
+    </main>
+  </div>
+
+  <!-- ================= 3. Odoo 九宫格 App Switcher 弹层 ================= -->
+  <div id="appSwitcherModal" class="app-switcher-modal" style="display:none;" onclick="AppManager.closeAppSwitcher()">
+    <div class="app-switcher-box" onclick="event.stopPropagation()">
+      <div class="app-switcher-header">
+        <div>
+          <h3 style="font-size:18px; font-weight:800;">Bravio 业务部门中枢 (App Switcher)</h3>
+          <p style="font-size:13px; color:var(--text-muted); margin-top:4px;">按企业部门与角色职责划分，选择要进入的业务工作台</p>
+        </div>
+        <button class="btn-secondary" onclick="AppManager.closeAppSwitcher()">✕ 关闭</button>
+      </div>
+
+      <div class="dept-grid" id="deptGridModal">
+        <!-- 动态渲染各部门 Tile -->
+      </div>
+    </div>
+  </div>
+
+  <!-- 引入依赖脚本 (带版本号强制穿透浏览器缓存) -->
+  <script src="js/api.js?v=0.3.2"></script>
+  <script src="js/auth.js?v=0.3.2"></script>
+  <script src="js/departments/executive.js?v=0.3.2"></script>
+  <script src="js/departments/hr.js?v=0.3.2"></script>
+  <script src="js/departments/engineering.js?v=0.3.2"></script>
+  <script src="js/departments/quality.js?v=0.3.2"></script>
+  <script src="js/departments/manufacturing.js?v=0.3.2"></script>
+  <script src="js/departments/logistics.js?v=0.3.2"></script>
+  <script src="js/departments/system.js?v=0.3.2"></script>
+  <script src="js/app.js?v=0.3.2"></script>
+
+  <script>
+    window.autoFillAndLogin = async function(username, password) {
+      document.getElementById("loginUser").value = username;
+      document.getElementById("loginPass").value = password;
+      const btn = document.getElementById("loginSubmitBtn");
+      btn.disabled = true;
+      btn.textContent = "正在建立安全会话...";
+      try {
+        await AuthService.login(username, password);
+        await AppManager.init();
+      } catch (err) {
+        alert("登录失败: " + err.message);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "安全建立加密会话";
+      }
+    };
+
+    window.handleManualLogin = async function() {
+      const u = document.getElementById("loginUser").value.trim();
+      const p = document.getElementById("loginPass").value;
+      await window.autoFillAndLogin(u, p);
+    };
+  </script>
+</body>
+</html>

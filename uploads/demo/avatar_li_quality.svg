@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120">
+  <defs>
+    <linearGradient id="bg-li" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#047857"/>
+      <stop offset="100%" stop-color="#10b981"/>
+    </linearGradient>
+  </defs>
+  <circle cx="60" cy="60" r="56" fill="url(#bg-li)" stroke="#34d399" stroke-width="4"/>
+  <circle cx="60" cy="48" r="22" fill="#fbcfe8"/>
+  <path d="M38 46 Q60 18 82 46 Q70 26 60 26 Q50 26 38 46 Z" fill="#334155"/>
+  <path d="M32 96 C34 78 48 72 60 72 C72 72 86 78 88 96 Z" fill="#f1f5f9"/>
+  <circle cx="88" cy="88" r="16" fill="#059669" stroke="#ffffff" stroke-width="2"/>
+  <text x="88" y="92" font-family="sans-serif" font-size="9" font-weight="bold" fill="#ffffff" text-anchor="middle">QA</text>
+</svg>

@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 150" width="200" height="150">
+  <defs>
+    <linearGradient id="pbg-tail" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#180608"/>
+      <stop offset="100%" stop-color="#2e0c10"/>
+    </linearGradient>
+  </defs>
+  <rect width="200" height="150" rx="8" fill="url(#pbg-tail)"/>
+  <path d="M15 80 Q 100 65 185 80 L 180 95 Q 100 82 20 95 Z" fill="#450a0a" stroke="#dc2626" stroke-width="2"/>
+  <path d="M20 86 Q 100 72 180 86" fill="none" stroke="#ef4444" stroke-width="5" stroke-linecap="round"/>
+  <path d="M20 86 Q 100 72 180 86" fill="none" stroke="#fecaca" stroke-width="1.5" stroke-linecap="round"/>
+  <rect x="10" y="10" width="80" height="18" rx="4" fill="#b91c1c" fill-opacity="0.3" stroke="#ef4444" stroke-width="1"/>
+  <text x="50" y="23" font-family="sans-serif" font-size="9" font-weight="bold" fill="#fca5a5" text-anchor="middle">OLED-TAIL-3D</text>
+</svg>

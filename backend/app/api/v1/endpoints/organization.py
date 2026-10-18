@@ -111,6 +111,7 @@ async def update_department(
 # =========================================================================
 
 @router.get("/positions", response_model=List[JobPositionResponse], summary="获取岗位列表")
+@router.get("/job-positions", response_model=List[JobPositionResponse], include_in_schema=False)
 async def list_positions(
     department_id: Optional[str] = None,
     db: AsyncSession = Depends(get_db),
@@ -226,6 +227,7 @@ async def list_employees(
                 status=emp.status,
                 hire_date=emp.hire_date,
                 user_id=emp.user_id,
+                avatar_url=emp.avatar_url,
                 account_username=acc_username,
                 account_roles=acc_roles,
                 created_at=emp.created_at,
@@ -321,12 +323,193 @@ async def create_employee(
         status=emp.status,
         hire_date=emp.hire_date,
         user_id=emp.user_id,
+        avatar_url=emp.avatar_url,
         account_username=acc_username,
         account_roles=acc_roles,
         created_at=emp.created_at,
         certifications=[],
         trainings=[]
     )
+
+
+@router.get("/employees/{emp_id}", response_model=EmployeeResponse, summary="获取单个员工详情")
+async def get_employee(
+    emp_id: str,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    stmt = (
+        select(Employee)
+        .options(
+            selectinload(Employee.department),
+            selectinload(Employee.job_position),
+            selectinload(Employee.user).selectinload(User.roles),
+            selectinload(Employee.certifications),
+            selectinload(Employee.trainings)
+        )
+        .where(Employee.id == emp_id, Employee.is_deleted == False)
+    )
+    emp = (await db.execute(stmt)).scalar_one_or_none()
+    if not emp:
+        raise HTTPException(status_code=404, detail="目标员工不存在")
+
+    acc_username = emp.user.username if emp.user else None
+    acc_roles = [r.name for r in getattr(emp.user, "roles", [])] if emp.user else []
+    audit_res = OrganizationService.audit_competency(emp, emp.job_position)
+
+    now = datetime.now(timezone.utc)
+    cert_resps = []
+    for c in emp.certifications:
+        exp = c.expiry_date
+        if exp.tzinfo is None:
+            exp = exp.replace(tzinfo=timezone.utc)
+        is_exp = now > exp
+        days = (exp - now).days
+        cert_resps.append(
+            CertificationResponse(
+                id=c.id,
+                employee_id=c.employee_id,
+                cert_name=c.cert_name,
+                cert_type=c.cert_type,
+                cert_no=c.cert_no,
+                issuing_authority=c.issuing_authority,
+                issue_date=c.issue_date,
+                expiry_date=c.expiry_date,
+                is_valid=c.is_valid,
+                attachment_url=c.attachment_url,
+                is_expired=is_exp,
+                days_to_expire=days,
+                is_warning=(not is_exp and days <= 30),
+                created_at=c.created_at
+            )
+        )
+
+    return EmployeeResponse(
+        id=emp.id,
+        employee_no=emp.employee_no,
+        name=emp.name,
+        email=emp.email,
+        phone=emp.phone,
+        department_id=emp.department_id,
+        department_name=emp.department.name if emp.department else None,
+        job_id=emp.job_id,
+        job_title=emp.job_position.title if emp.job_position else None,
+        manager_id=emp.manager_id,
+        status=emp.status,
+        hire_date=emp.hire_date,
+        user_id=emp.user_id,
+        avatar_url=emp.avatar_url,
+        account_username=acc_username,
+        account_roles=acc_roles,
+        created_at=emp.created_at,
+        certifications=cert_resps,
+        trainings=[TrainingResponse.model_validate(t) for t in emp.trainings],
+        competency_status=audit_res
+    )
+
+
+@router.put("/employees/{emp_id}", response_model=EmployeeResponse, summary="修改员工信息")
+async def update_employee(
+    emp_id: str,
+    emp_in: EmployeeUpdate,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    stmt = (
+        select(Employee)
+        .options(
+            selectinload(Employee.department),
+            selectinload(Employee.job_position),
+            selectinload(Employee.user).selectinload(User.roles)
+        )
+        .where(Employee.id == emp_id, Employee.is_deleted == False)
+    )
+    emp = (await db.execute(stmt)).scalar_one_or_none()
+    if not emp:
+        raise HTTPException(status_code=404, detail="目标员工不存在")
+
+    update_dict = emp_in.model_dump(exclude_unset=True)
+    if "email" in update_dict and update_dict["email"] != emp.email:
+        exist_email = (await db.execute(
+            select(Employee).where(Employee.email == update_dict["email"], Employee.id != emp_id, Employee.is_deleted == False)
+        )).scalar_one_or_none()
+        if exist_email:
+            raise HTTPException(status_code=400, detail=f"工作邮箱 '{update_dict['email']}' 已被其他员工使用")
+
+    for key, value in update_dict.items():
+        setattr(emp, key, value)
+
+    emp.updated_by_id = current_user.id
+    await db.commit()
+
+    # 重新加载关联关系并计算资质审查状态
+    reload_stmt = (
+        select(Employee)
+        .options(
+            selectinload(Employee.department),
+            selectinload(Employee.job_position),
+            selectinload(Employee.user).selectinload(User.roles),
+            selectinload(Employee.certifications),
+            selectinload(Employee.trainings)
+        )
+        .where(Employee.id == emp_id, Employee.is_deleted == False)
+    )
+    emp = (await db.execute(reload_stmt)).scalar_one()
+
+    acc_username = emp.user.username if emp.user else None
+    acc_roles = [r.name for r in getattr(emp.user, "roles", [])] if emp.user else []
+    audit_res = OrganizationService.audit_competency(emp, emp.job_position)
+
+    now = datetime.now(timezone.utc)
+    cert_resps = []
+    for c in emp.certifications:
+        exp = c.expiry_date
+        if exp.tzinfo is None:
+            exp = exp.replace(tzinfo=timezone.utc)
+        is_exp = now > exp
+        days = (exp - now).days
+        cert_resps.append(
+            CertificationResponse(
+                id=c.id,
+                employee_id=c.employee_id,
+                cert_name=c.cert_name,
+                cert_type=c.cert_type,
+                cert_no=c.cert_no,
+                issuing_authority=c.issuing_authority,
+                issue_date=c.issue_date,
+                expiry_date=c.expiry_date,
+                is_valid=c.is_valid,
+                attachment_url=c.attachment_url,
+                is_expired=is_exp,
+                days_to_expire=days,
+                is_warning=(not is_exp and days <= 30),
+                created_at=c.created_at
+            )
+        )
+
+    return EmployeeResponse(
+        id=emp.id,
+        employee_no=emp.employee_no,
+        name=emp.name,
+        email=emp.email,
+        phone=emp.phone,
+        department_id=emp.department_id,
+        department_name=emp.department.name if emp.department else None,
+        job_id=emp.job_id,
+        job_title=emp.job_position.title if emp.job_position else None,
+        manager_id=emp.manager_id,
+        status=emp.status,
+        hire_date=emp.hire_date,
+        user_id=emp.user_id,
+        avatar_url=emp.avatar_url,
+        account_username=acc_username,
+        account_roles=acc_roles,
+        created_at=emp.created_at,
+        certifications=cert_resps,
+        trainings=[TrainingResponse.model_validate(t) for t in emp.trainings],
+        competency_status=audit_res
+    )
+
 
 
 # =========================================================================

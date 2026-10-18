@@ -128,6 +128,7 @@ class EmployeeBase(BaseModel):
     status: EmployeeStatus = EmployeeStatus.ACTIVE
     hire_date: Optional[datetime] = None
     user_id: Optional[str] = None
+    avatar_url: Optional[str] = None
 
 class EmployeeCreate(EmployeeBase):
     account: Optional[EmployeeAccountCreate] = None
@@ -142,6 +143,7 @@ class EmployeeUpdate(BaseModel):
     status: Optional[EmployeeStatus] = None
     hire_date: Optional[datetime] = None
     user_id: Optional[str] = None
+    avatar_url: Optional[str] = None
 
 class EmployeeCompetencyAudit(BaseModel):
     """关键岗位资质合规性审查结论"""
